@@ -1,14 +1,12 @@
 <?php
 
-namespace Enqueue\SimpleClient\Tests\Functional;
+namespace Enqueue\SimpleClient\Tests;
 
-use Enqueue\Consumption\ChainExtension;
-use Enqueue\Consumption\Extension\LimitConsumedMessagesExtension;
-use Enqueue\Consumption\Extension\LimitConsumptionTimeExtension;
 use Enqueue\Consumption\Result;
 use Enqueue\SimpleClient\SimpleClient;
 use Enqueue\Test\RabbitManagementExtensionTrait;
 use Enqueue\Test\RabbitmqAmqpExtension;
+use Interop\Queue\PsrContext;
 use Interop\Queue\PsrMessage;
 use PHPUnit\Framework\TestCase;
 
@@ -46,6 +44,8 @@ class SimpleClientTest extends TestCase
         ]];
 
         yield 'config_as_dsn_string' => [getenv('AMQP_DSN')];
+
+        yield 'config_as_dsn_without_host' => ['amqp:?lazy=1'];
 
         yield 'amqp_dsn' => [[
             'transport' => [
@@ -112,45 +112,6 @@ class SimpleClientTest extends TestCase
             return Result::ACK;
         });
 
-        $client->send('foo_topic', 'Hello there!', true);
-
-        $client->consume(new ChainExtension([
-            new LimitConsumptionTimeExtension(new \DateTime('+5sec')),
-            new LimitConsumedMessagesExtension(2),
-        ]));
-
-        $this->assertInstanceOf(PsrMessage::class, $actualMessage);
-        $this->assertSame('Hello there!', $actualMessage->getBody());
-    }
-
-    /**
-     * @dataProvider transportConfigDataProvider
-     *
-     * @param mixed $config
-     */
-    public function testProduceAndRouteToTwoConsumes($config)
-    {
-        $received = 0;
-
-        $client = new SimpleClient($config);
-        $client->bind('foo_topic', 'foo_processor1', function () use (&$received) {
-            ++$received;
-
-            return Result::ACK;
-        });
-        $client->bind('foo_topic', 'foo_processor2', function () use (&$received) {
-            ++$received;
-
-            return Result::ACK;
-        });
-
-        $client->send('foo_topic', 'Hello there!', true);
-
-        $client->consume(new ChainExtension([
-            new LimitConsumptionTimeExtension(new \DateTime('+5sec')),
-            new LimitConsumedMessagesExtension(3),
-        ]));
-
-        $this->assertSame(2, $received);
+        $this->assertInstanceOf(PsrContext::class, $client->getContext());
     }
 }
