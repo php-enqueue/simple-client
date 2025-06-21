@@ -10,12 +10,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['7.4', '8.0', '8.1', '8.2']
+        php: ['8.1', '8.2', '8.3', '8.4']
 
     name: PHP ${{ matrix.php }} tests
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -24,7 +24,7 @@ jobs:
 
       - run: php Tests/fix_composer_json.php
 
-      - uses: "ramsey/composer-install@v1"
+      - uses: "ramsey/composer-install@v3"
         with:
           composer-options: "--prefer-source"
 
