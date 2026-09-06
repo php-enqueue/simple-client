@@ -133,7 +133,7 @@ final class SimpleClient
     /**
      * @param callable|Processor $processor
      */
-    public function bindTopic(string $topic, $processor, ?string $processorName = null): void
+    public function bindTopic(string $topic, $processor, ?string $processorName = null, array $options = []): void
     {
         if (is_callable($processor)) {
             $processor = new CallbackProcessor($processor);
@@ -145,14 +145,14 @@ final class SimpleClient
 
         $processorName = $processorName ?: uniqid($processor::class);
 
-        $this->driver->getRouteCollection()->add(new Route($topic, Route::TOPIC, $processorName));
+        $this->driver->getRouteCollection()->add(new Route($topic, Route::TOPIC, $processorName, $options));
         $this->processorRegistry->add($processorName, $processor);
     }
 
     /**
      * @param callable|Processor $processor
      */
-    public function bindCommand(string $command, $processor, ?string $processorName = null): void
+    public function bindCommand(string $command, $processor, ?string $processorName = null, array $options = []): void
     {
         if (is_callable($processor)) {
             $processor = new CallbackProcessor($processor);
@@ -164,7 +164,7 @@ final class SimpleClient
 
         $processorName = $processorName ?: uniqid($processor::class);
 
-        $this->driver->getRouteCollection()->add(new Route($command, Route::COMMAND, $processorName));
+        $this->driver->getRouteCollection()->add(new Route($command, Route::COMMAND, $processorName, $options));
         $this->processorRegistry->add($processorName, $processor);
     }
 
